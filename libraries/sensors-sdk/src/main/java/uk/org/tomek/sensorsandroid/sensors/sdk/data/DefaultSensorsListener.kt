@@ -5,8 +5,10 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.SystemClock
 import timber.log.Timber
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
+import kotlin.time.Duration.Companion.seconds
 
 internal class DefaultSensorsListener(
     context: Context,
@@ -16,25 +18,35 @@ internal class DefaultSensorsListener(
     }
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
+    private val lastProcessedTimes = mutableMapOf<Int, Long>()
 
     override fun startListening() {
         sensors.forEach { sensor ->
-            val supported = sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            // Request 1 second delay (1,000,000 microseconds)
+            val supported = sensorManager.registerListener(this, sensor, 1.seconds.inWholeMicroseconds.toInt())
             if (!supported) {
-                Timber.Forest.w("Sensor ${sensor.name} not supported")
+                Timber.w("Sensor ${sensor.name} not supported")
             }
         }
     }
 
     override fun stopListening() {
         sensorManager.unregisterListener(this)
+        lastProcessedTimes.clear()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        event?.let { onSensorData(it) }
+        event?.let {
+            val currentTime = SystemClock.elapsedRealtime()
+            val lastTime = lastProcessedTimes[it.sensor.type] ?: 0L
+            if (currentTime - lastTime >= 1000) {
+                lastProcessedTimes[it.sensor.type] = currentTime
+                onSensorData(it)
+            }
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Timber.Forest.d("Accuracy changed for ${sensor?.name}: $accuracy")
+        Timber.d("Accuracy changed for ${sensor?.name}: $accuracy")
     }
 }
