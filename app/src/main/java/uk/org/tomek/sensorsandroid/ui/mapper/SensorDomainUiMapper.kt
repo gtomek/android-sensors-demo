@@ -6,7 +6,8 @@ import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
 class SensorDomainUiMapper {
 
     fun toUi(sensorData: SensorData): SensorDataUiModel = SensorDataUiModel(
-        sensorStringType = "Type ${sensorData.sensorType}",
+        sensorType = sensorData.sensorType,
+        sensorStringType = "Type ${sensorData.sensorType} ${sensorData.sensorStringType}",
         sensorName = sensorData.sensorName,
         sensorTimestamp = sensorData.timestamp,
         sensorValues = sensorData.sensorValues

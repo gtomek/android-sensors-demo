@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,15 +31,13 @@ import uk.org.tomek.sensorsandroid.ui.theme.SensorsAndroidTheme
 import kotlin.time.Instant
 
 @Composable
-fun Greeting(
-    name: String,
+fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    DefaultGreeting(
-        name = name,
+    DefaultMainScreen(
         data = uiState,
         onStartSensorsClick = { viewModel.startSensors() },
         onStopSensorsClick = { viewModel.stopSensors() },
@@ -49,8 +48,7 @@ fun Greeting(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DefaultGreeting(
-    name: String,
+private fun DefaultMainScreen(
     data: List<SensorDataUiModel>,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
@@ -138,7 +136,9 @@ private fun DefaultGreeting(
                     ) {
                         Text(
                             text = sensor.sensorStringType,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = "Values: ${sensor.sensorValues.joinToString(", ")}",
@@ -158,10 +158,9 @@ private fun DefaultGreeting(
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun MainScreenPreview() {
     SensorsAndroidTheme {
-        DefaultGreeting(
-            "Android",
+        DefaultMainScreen(
             data = emptyList(),
             onStartSensorsClick = {},
             onStopSensorsClick = {},
@@ -172,24 +171,26 @@ fun GreetingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingWithDataPreview() {
+fun MainScreenWithDataPreview() {
     SensorsAndroidTheme {
-        DefaultGreeting(
-            name = "Android",
+        DefaultMainScreen(
             data = listOf(
                 SensorDataUiModel(
+                    sensorType = 1,
                     sensorStringType = "Accelerometer",
                     sensorName = "Standard Accelerometer",
                     sensorTimestamp = Instant.fromEpochMilliseconds(1739800000000L),
                     sensorValues = listOf(0.1f, 9.8f, 0.5f)
                 ),
                 SensorDataUiModel(
+                    sensorType = 1,
                     sensorStringType = "Accelerometer",
                     sensorName = "Standard Accelerometer",
                     sensorTimestamp = Instant.fromEpochMilliseconds(1739800001000L),
                     sensorValues = listOf(0.2f, 9.7f, 0.4f)
                 ),
                 SensorDataUiModel(
+                    sensorType = 4,
                     sensorStringType = "Gyroscope",
                     sensorName = "Standard Gyroscope",
                     sensorTimestamp = Instant.fromEpochMilliseconds(1739800000500L),

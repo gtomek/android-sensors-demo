@@ -18,8 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SensorsAndroidTheme {
                 Scaffold(modifier = Modifier.Companion.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    MainScreen(
                         modifier = Modifier.Companion.padding(innerPadding)
                     )
                 }

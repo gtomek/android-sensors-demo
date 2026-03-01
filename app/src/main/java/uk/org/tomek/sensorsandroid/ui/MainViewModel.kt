@@ -32,18 +32,19 @@ class MainViewModel(
                 Timber.v("Sensor data: $sensorData")
                 val uiModel = sensorDataMapper.toUi(sensorData)
                 _uiState.update { currentList ->
-                    if (displayType.value == DisplayType.LAST_ONLY) {
-                        val newList = currentList.toMutableList()
-                        val index = newList.indexOfFirst { it.sensorName == uiModel.sensorName }
+                    val newList = if (displayType.value == DisplayType.LAST_ONLY) {
+                        val updatedList = currentList.toMutableList()
+                        val index = updatedList.indexOfFirst { it.sensorName == uiModel.sensorName }
                         if (index != -1) {
-                            newList[index] = uiModel
+                            updatedList[index] = uiModel
                         } else {
-                            newList.add(uiModel)
+                            updatedList.add(uiModel)
                         }
-                        newList
+                        updatedList
                     } else {
                         currentList + uiModel
                     }
+                    newList.sortedBy { it.sensorType }
                 }
             }
             .launchIn(viewModelScope)
@@ -60,6 +61,7 @@ class MainViewModel(
             _uiState.update { currentList ->
                 currentList.groupBy { it.sensorName }
                     .map { it.value.last() }
+                    .sortedBy { it.sensorType }
             }
         }
     }
