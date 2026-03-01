@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.androidx.compose.koinViewModel
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
+import uk.org.tomek.sensorsandroid.ui.theme.Pink40
 import uk.org.tomek.sensorsandroid.ui.theme.SensorsAndroidTheme
 import kotlin.time.Instant
 
@@ -40,6 +42,7 @@ fun Greeting(
         data = uiState,
         onStartSensorsClick = { viewModel.startSensors() },
         onStopSensorsClick = { viewModel.stopSensors() },
+        onChangeDisplayTypeClick = { viewModel.changeDisplayType() },
         modifier = modifier
     )
 }
@@ -51,6 +54,7 @@ private fun DefaultGreeting(
     data: List<SensorDataUiModel>,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
+    onChangeDisplayTypeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val groupedData = remember(data) {
@@ -91,6 +95,18 @@ private fun DefaultGreeting(
         ) {
             Text(
                 text = "Stop sensors"
+            )
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Pink40),
+            onClick = {
+                onChangeDisplayTypeClick()
+            }
+        ) {
+            Text(
+                text = "Change display type"
             )
         }
 
@@ -148,7 +164,8 @@ fun GreetingPreview() {
             "Android",
             data = emptyList(),
             onStartSensorsClick = {},
-            onStopSensorsClick = {}
+            onStopSensorsClick = {},
+            onChangeDisplayTypeClick = {}
         )
     }
 }
@@ -180,7 +197,8 @@ fun GreetingWithDataPreview() {
                 )
             ),
             onStartSensorsClick = {},
-            onStopSensorsClick = {}
+            onStopSensorsClick = {},
+            onChangeDisplayTypeClick = {}
         )
     }
 }
