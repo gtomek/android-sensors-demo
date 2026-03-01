@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.koin.android)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

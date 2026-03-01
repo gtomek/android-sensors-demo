@@ -11,7 +11,8 @@ internal class SensorDataDomainMapper {
             sensorId = event.sensor.id,
             sensorType = event.sensor.type,
             sensorName = event.sensor.name,
+            sensorValues = event.values.toList(),
+            sensorTimestamp = Instant.fromEpochMilliseconds(event.timestamp),
             timestamp = Instant.fromEpochMilliseconds(System.currentTimeMillis()),
-            sensorValues = event.values.toList()
         )
 }

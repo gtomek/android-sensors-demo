@@ -6,6 +6,7 @@ data class SensorData(
     val sensorId: Int,
     val sensorType: Int,
     val sensorName: String,
-    val timestamp: Instant,
-    val sensorValues: List<Float>
+    val sensorTimestamp: Instant,
+    val sensorValues: List<Float>,
+    val timestamp: Instant
 )
