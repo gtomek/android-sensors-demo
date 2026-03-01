@@ -5,7 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
+import timber.log.Timber
 
 class SensorListener(
     context: Context,
@@ -18,7 +18,7 @@ class SensorListener(
         sensors.forEach { sensor ->
             val supported = sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
             if (!supported) {
-                Log.w("SensorListener", "Sensor ${sensor.name} not supported")
+                Timber.w("Sensor ${sensor.name} not supported")
             }
         }
     }
@@ -32,6 +32,6 @@ class SensorListener(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d("SensorListener", "Accuracy changed for ${sensor?.name}: $accuracy")
+        Timber.d("Accuracy changed for ${sensor?.name}: $accuracy")
     }
 }
