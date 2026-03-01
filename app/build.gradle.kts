@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.koin.compiler)
 }
 
 android {
@@ -53,6 +54,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
+    implementation(libs.koin.annotations)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

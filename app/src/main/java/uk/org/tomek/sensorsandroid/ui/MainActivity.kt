@@ -1,4 +1,4 @@
-package uk.org.tomek.sensorsandroid
+package uk.org.tomek.sensorsandroid.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import timber.log.Timber
 import uk.org.tomek.sensorsandroid.ui.theme.SensorsAndroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,10 +17,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SensorsAndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(modifier = Modifier.Companion.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.Companion.padding(innerPadding)
                     )
                 }
             }
