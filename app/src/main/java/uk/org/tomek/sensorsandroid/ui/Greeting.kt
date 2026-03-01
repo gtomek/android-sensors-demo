@@ -3,12 +3,14 @@ package uk.org.tomek.sensorsandroid.ui
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
 import uk.org.tomek.sensorsandroid.ui.theme.SensorsAndroidTheme
 
@@ -21,6 +23,7 @@ fun Greeting(
     DefaultGreeting(
         name = name,
         onStartSensorsClick = { viewModel.startSensors() },
+        onStopSensorsClick = { viewModel.stopSensors() },
         modifier = modifier
     )
 }
@@ -29,11 +32,14 @@ fun Greeting(
 private fun DefaultGreeting(
     name: String,
     onStartSensorsClick: () -> Unit,
+    onStopSensorsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
 
         Text(
@@ -52,6 +58,17 @@ private fun DefaultGreeting(
             )
         }
 
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                onStopSensorsClick()
+            }
+        ) {
+            Text(
+                text = "Stop sensors"
+            )
+        }
+
     }
 
 }
@@ -62,6 +79,8 @@ fun GreetingPreview() {
     SensorsAndroidTheme {
         DefaultGreeting(
             "Android",
-            onStartSensorsClick = {})
+            onStartSensorsClick = {},
+            onStopSensorsClick = {}
+        )
     }
 }

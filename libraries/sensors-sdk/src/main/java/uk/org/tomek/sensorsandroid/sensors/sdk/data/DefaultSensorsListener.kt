@@ -1,4 +1,4 @@
-package uk.org.tomek.sensorsandroid.sensors.sdk
+package uk.org.tomek.sensorsandroid.sensors.sdk.data
 
 import android.content.Context
 import android.hardware.Sensor
@@ -6,24 +6,27 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import timber.log.Timber
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
 
-class SensorListener(
+internal class DefaultSensorsListener(
     context: Context,
-    private val onSensorData: (SensorEvent) -> Unit
-) : SensorEventListener {
+) : SensorEventListener, SensorsListener {
+    private val onSensorData: (SensorEvent) -> Unit =  {
+        Timber.d("Sensor data: ${it.values.joinToString()}")
+    }
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
 
-    fun startListening() {
+    override fun startListening() {
         sensors.forEach { sensor ->
             val supported = sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
             if (!supported) {
-                Timber.w("Sensor ${sensor.name} not supported")
+                Timber.Forest.w("Sensor ${sensor.name} not supported")
             }
         }
     }
 
-    fun stopListening() {
+    override fun stopListening() {
         sensorManager.unregisterListener(this)
     }
 
@@ -32,6 +35,6 @@ class SensorListener(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Timber.d("Accuracy changed for ${sensor?.name}: $accuracy")
+        Timber.Forest.d("Accuracy changed for ${sensor?.name}: $accuracy")
     }
 }

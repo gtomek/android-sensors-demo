@@ -10,5 +10,6 @@ class MainViewModel(
     private val sensorsRepository: SensorsRepository,
 ): ViewModel() {
 
-    fun startSensors(): Boolean = sensorsRepository.startSensors()
+    fun startSensors() = sensorsRepository.startSensors()
+    fun stopSensors() = sensorsRepository.stopLeasingSensors()
 }
