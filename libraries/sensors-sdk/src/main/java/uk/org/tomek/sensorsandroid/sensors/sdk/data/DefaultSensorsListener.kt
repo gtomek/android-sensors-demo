@@ -6,6 +6,10 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.SystemClock
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import timber.log.Timber
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.mapper.SensorDataDomainMapper
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
@@ -16,9 +20,18 @@ internal class DefaultSensorsListener(
     context: Context,
     private val sensorDataDomainMapper: SensorDataDomainMapper = SensorDataDomainMapper(),
 ) : SensorEventListener, SensorsListener {
-    private val onSensorData: (SensorData) -> Unit = {
-        Timber.d("Sensor data: ${it.sensorName} ${it.sensorValues}")
+
+    private val _sensorDataFlow = MutableSharedFlow<SensorData>(
+        extraBufferCapacity = 64,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    override val sensorDataFlow: SharedFlow<SensorData> = _sensorDataFlow.asSharedFlow()
+
+    private fun onSensorData(data: SensorData) {
+        Timber.d("Sensor data: ${data.sensorName} [${data.sensorType}] ${data.sensorValues} ${data.sensorTimestamp}")
+        _sensorDataFlow.tryEmit(data)
     }
+
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
     private val lastProcessedTimes = mutableMapOf<Int, Long>()

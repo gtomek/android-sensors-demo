@@ -5,6 +5,7 @@ import kotlin.time.Instant
 data class SensorData(
     val sensorId: Int,
     val sensorType: Int,
+    val sensorStringType: String,
     val sensorName: String,
     val sensorTimestamp: Instant,
     val sensorValues: List<Float>,
