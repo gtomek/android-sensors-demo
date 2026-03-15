@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.org.tomek.sensorsandroid.ui.model.MainUiState
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
+import uk.org.tomek.sensorsandroid.ui.model.WifiDataUiModel
 import uk.org.tomek.sensorsandroid.ui.theme.Pink40
 import uk.org.tomek.sensorsandroid.ui.theme.SensorsAndroidTheme
 import kotlin.time.Instant
@@ -56,7 +57,8 @@ fun MainScreenData(
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
         DefaultMainScreenContent(
-            data = state.sensorData,
+            sensorData = state.sensorData,
+            wifiData = state.wifiData,
             onStartSensorsClick = onStartSensorsClick,
             onStopSensorsClick = onStopSensorsClick,
             onChangeDisplayTypeClick = onChangeDisplayTypeClick,
@@ -69,15 +71,16 @@ fun MainScreenData(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DefaultMainScreenContent(
-    data: List<SensorDataUiModel>,
+    sensorData: List<SensorDataUiModel>,
+    wifiData: List<WifiDataUiModel>,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
     onChangeDisplayTypeClick: () -> Unit,
     onGetCurrentLocation: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val groupedData = remember(data) {
-        data.groupBy { it.sensorName }
+    val groupedSensorData = remember(sensorData) {
+        sensorData.groupBy { it.sensorName }
     }
 
     Column(
@@ -144,7 +147,7 @@ private fun DefaultMainScreenContent(
                 .weight(1f)
                 .padding(top = 16.dp)
         ) {
-            groupedData.forEach { (sensorName, sensors) ->
+            groupedSensorData.forEach { (sensorName, sensors) ->
                 stickyHeader {
                     Text(
                         text = sensorName,
@@ -182,6 +185,59 @@ private fun DefaultMainScreenContent(
                     }
                 }
             }
+
+            if (wifiData.isNotEmpty()) {
+                stickyHeader {
+                    Text(
+                        text = "WiFi Scan Results",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.tertiaryContainer)
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+
+                items(wifiData) { wifi ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "${wifi.ssid} (${wifi.bssid})",
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "RSSI: ${wifi.rssi} dBm, Freq: ${wifi.frequency} MHz",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        if (wifi.distance != null) {
+                            Text(
+                                text = "Distance: ${wifi.distance}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Text(
+                            text = "Capabilities: ${wifi.capabilities}",
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Timestamp: ${wifi.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -206,6 +262,26 @@ fun MainScreenDataPreview() {
                         sensorName = "Standard Gyroscope",
                         sensorTimestamp = Instant.fromEpochMilliseconds(1739800000500L),
                         sensorValues = listOf(0.01f, 0.02f, 0.03f)
+                    )
+                ),
+                wifiData = listOf(
+                    WifiDataUiModel(
+                        ssid = "Home_Network",
+                        bssid = "00:11:22:33:44:55",
+                        rssi = -45,
+                        frequency = 5240,
+                        capabilities = "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
+                        distance = "2.5m (±0.3m)",
+                        timestamp = "12:00:00.000"
+                    ),
+                    WifiDataUiModel(
+                        ssid = "Office_WiFi",
+                        bssid = "AA:BB:CC:DD:EE:FF",
+                        rssi = -60,
+                        frequency = 2412,
+                        capabilities = "[WPA2-PSK-CCMP][ESS]",
+                        distance = null,
+                        timestamp = "12:00:01.000"
                     )
                 ),
                 locationMessage = "Location: 52.0, 0.0"

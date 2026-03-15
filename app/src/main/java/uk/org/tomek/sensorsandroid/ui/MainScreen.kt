@@ -2,6 +2,8 @@ package uk.org.tomek.sensorsandroid.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -25,10 +27,51 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val permissionLauncher = rememberLauncherForActivityResult(
+    val locationPermissions = mutableListOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(Manifest.permission.NEARBY_WIFI_DEVICES)
+        }
+    }.toTypedArray()
+
+    fun hasLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    val sensorsPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ ->
-        viewModel.getCurrentLocation()
+    ) { permissions ->
+        if (permissions.values.any { it }) {
+            viewModel.startSensors()
+        }
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.any { it }) {
+            viewModel.getCurrentLocation()
+        }
+    }
+
+    fun runWithPermission(
+        launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>,
+        action: () -> Unit
+    ) {
+        if (hasLocationPermission()) {
+            action()
+        } else {
+            launcher.launch(locationPermissions)
+        }
     }
 
     when (val state = uiState) {
@@ -41,31 +84,13 @@ fun MainScreen(
         is MainUiState.Data -> {
             MainScreenData(
                 state = state,
-                onStartSensorsClick = { viewModel.startSensors() },
+                onStartSensorsClick = {
+                    runWithPermission(sensorsPermissionLauncher) { viewModel.startSensors() }
+                },
                 onStopSensorsClick = { viewModel.stopSensors() },
                 onChangeDisplayTypeClick = { viewModel.changeDisplayType() },
                 onGetCurrentLocation = {
-                    val fineLocationPermission = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                    val coarseLocationPermission = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-
-                    if (fineLocationPermission == PackageManager.PERMISSION_GRANTED ||
-                        coarseLocationPermission == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        viewModel.getCurrentLocation()
-                    } else {
-                        permissionLauncher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                            )
-                        )
-                    }
+                    runWithPermission(locationPermissionLauncher) { viewModel.getCurrentLocation() }
                 },
                 onLocationMessageShown = { viewModel.onLocationMessageShown() },
                 modifier = modifier
