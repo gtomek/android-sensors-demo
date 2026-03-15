@@ -3,7 +3,9 @@ package uk.org.tomek.sensorsandroid.di
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import uk.org.tomek.sensorsandroid.data.LocationRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.SensorsRepositoryDefault
+import uk.org.tomek.sensorsandroid.domain.LocationRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
 import uk.org.tomek.sensorsandroid.sensors.sdk.SensorsSdk
 import uk.org.tomek.sensorsandroid.ui.MainViewModel
@@ -14,6 +16,7 @@ object KoinModule {
         single { SensorDomainUiMapper() }
         single { SensorsSdk(get()) }
         single { SensorsRepositoryDefault(get()) } bind SensorsRepository::class
+        single { LocationRepositoryDefault(get()) } bind LocationRepository::class
         viewModel { MainViewModel(get(), get()) }
     }
 }
