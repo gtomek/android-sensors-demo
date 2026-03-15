@@ -4,6 +4,8 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultSensorsListener
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultWifiScanner
+import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultLocationHandler
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.LocationHandler
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.WifiScanner
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
@@ -14,6 +16,7 @@ class SensorsSdk(
 ) {
     private val sensorsListener: SensorsListener = DefaultSensorsListener(context)
     private val wifiScanner: WifiScanner = DefaultWifiScanner(context)
+    val locationHandler: LocationHandler = DefaultLocationHandler(context)
 
     val sensorDataFlow: Flow<SensorData> = sensorsListener.sensorDataFlow
     val wifiDataFlow: Flow<WifiData> = wifiScanner.wifiDataFlow
@@ -40,7 +43,7 @@ class SensorsSdk(
     }
 
     fun stopListening() {
-        stopSensors()
-        stopWifiScanning()
+        sensorsListener.stopListening()
+        wifiScanner.stopScanning()
     }
 }
