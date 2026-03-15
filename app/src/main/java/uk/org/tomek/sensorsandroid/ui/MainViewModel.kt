@@ -12,6 +12,7 @@ import org.koin.android.annotation.KoinViewModel
 import timber.log.Timber
 import uk.org.tomek.sensorsandroid.domain.BleScanRepository
 import uk.org.tomek.sensorsandroid.domain.LocationRepository
+import uk.org.tomek.sensorsandroid.domain.MobileNetworksRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
 import uk.org.tomek.sensorsandroid.domain.WifiScanRepository
 import uk.org.tomek.sensorsandroid.ui.mapper.SensorDomainUiMapper
@@ -24,8 +25,9 @@ class MainViewModel(
     private val locationRepository: LocationRepository,
     private val wifiScanRepository: WifiScanRepository,
     private val bleScanRepository: BleScanRepository,
+    private val mobileNetworksRepository: MobileNetworksRepository,
     private val sensorDataMapper: SensorDomainUiMapper
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MainUiState>(MainUiState.Loading)
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -45,7 +47,8 @@ class MainViewModel(
                         val currentList = currentState.sensorData
                         val newList = if (displayType.value == DisplayType.LAST_ONLY) {
                             val updatedList = currentList.toMutableList()
-                            val index = updatedList.indexOfFirst { it.sensorName == uiModel.sensorName }
+                            val index =
+                                updatedList.indexOfFirst { it.sensorName == uiModel.sensorName }
                             if (index != -1) {
                                 updatedList[index] = uiModel
                             } else {
@@ -93,7 +96,8 @@ class MainViewModel(
                     if (currentState is MainUiState.Data) {
                         val currentList = currentState.bleData
                         val updatedList = currentList.toMutableList()
-                        val index = updatedList.indexOfFirst { it.deviceAddress == uiModel.deviceAddress }
+                        val index =
+                            updatedList.indexOfFirst { it.deviceAddress == uiModel.deviceAddress }
                         if (index != -1) {
                             updatedList[index] = uiModel
                         } else {
@@ -106,17 +110,43 @@ class MainViewModel(
                 }
             }
             .launchIn(viewModelScope)
+
+        mobileNetworksRepository.mobileNetworkDataFlow
+            .onEach { mobileNetworkData ->
+                Timber.v("Mobile Network data: $mobileNetworkData")
+                val uiModel = sensorDataMapper.toUi(mobileNetworkData)
+                _uiState.update { currentState ->
+                    if (currentState is MainUiState.Data) {
+                        currentState.copy(mobileNetworkData = uiModel)
+                    } else {
+                        currentState
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun startSensors() {
         sensorsRepository.startSensors()
         wifiScanRepository.startScanning()
+            .onFailure {
+                Timber.e(it, "Failed to start WiFi scanning")
+            }
         bleScanRepository.startScanning()
+            .onFailure {
+                Timber.e(it, "Failed to start BLE scanning")
+            }
+        mobileNetworksRepository.startScanning()
+            .onFailure {
+                Timber.e(it, "Failed to start mobile networks scanning")
+            }
     }
+
     fun stopSensors() {
         sensorsRepository.stopLeasingSensors()
         wifiScanRepository.stopScanning()
         bleScanRepository.stopScanning()
+        mobileNetworksRepository.stopScanning()
     }
 
     fun changeDisplayType() {

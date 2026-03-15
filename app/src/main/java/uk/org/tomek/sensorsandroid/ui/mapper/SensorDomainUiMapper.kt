@@ -2,9 +2,13 @@ package uk.org.tomek.sensorsandroid.ui.mapper
 
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BeaconInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.CellInfo
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
+import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
+import uk.org.tomek.sensorsandroid.ui.model.MobileNetworkDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.WifiDataUiModel
 import java.text.SimpleDateFormat
@@ -40,6 +44,21 @@ class SensorDomainUiMapper {
         txPower = bleData.txPower,
         beaconInfo = formatBeaconInfo(bleData.beaconInfo),
         timestamp = dateFormat.format(Date(bleData.timestamp))
+    )
+
+    fun toUi(mobileNetworkData: MobileNetworkData): MobileNetworkDataUiModel = MobileNetworkDataUiModel(
+        timestamp = dateFormat.format(Date(mobileNetworkData.timestamp)),
+        primaryCell = mobileNetworkData.primaryCell?.let { toUi(it) },
+        neighboringCells = mobileNetworkData.neighboringCells.map { toUi(it) }
+    )
+
+    private fun toUi(cellInfo: CellInfo): CellInfoUiModel = CellInfoUiModel(
+        type = cellInfo.type,
+        cellId = cellInfo.cellId?.toString() ?: "N/A",
+        lacTac = cellInfo.lac?.toString() ?: "N/A",
+        mccMnc = "${cellInfo.mcc ?: "N/A"}/${cellInfo.mnc ?: "N/A"}",
+        signalStrength = cellInfo.signalStrength?.let { "$it dBm" } ?: "N/A",
+        timingAdvance = cellInfo.timingAdvance?.toString() ?: "N/A"
     )
 
     private fun formatBeaconInfo(info: BeaconInfo?): String? {

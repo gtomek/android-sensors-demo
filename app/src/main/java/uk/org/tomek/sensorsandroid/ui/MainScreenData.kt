@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -27,7 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
+import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
 import uk.org.tomek.sensorsandroid.ui.model.MainUiState
+import uk.org.tomek.sensorsandroid.ui.model.MobileNetworkDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.WifiDataUiModel
 import uk.org.tomek.sensorsandroid.ui.theme.Pink40
@@ -61,6 +64,7 @@ fun MainScreenData(
             sensorData = state.sensorData,
             wifiData = state.wifiData,
             bleData = state.bleData,
+            mobileNetworkData = state.mobileNetworkData,
             onStartSensorsClick = onStartSensorsClick,
             onStopSensorsClick = onStopSensorsClick,
             onChangeDisplayTypeClick = onChangeDisplayTypeClick,
@@ -76,6 +80,7 @@ private fun DefaultMainScreenContent(
     sensorData: List<SensorDataUiModel>,
     wifiData: List<WifiDataUiModel>,
     bleData: List<BleDataUiModel>,
+    mobileNetworkData: MobileNetworkDataUiModel?,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
     onChangeDisplayTypeClick: () -> Unit,
@@ -288,7 +293,69 @@ private fun DefaultMainScreenContent(
                     }
                 }
             }
+
+            if (mobileNetworkData != null) {
+                stickyHeader {
+                    Text(
+                        text = "Mobile Network Info",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFE1BEE7))
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF4A148C)
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Timestamp: ${mobileNetworkData.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "Primary Cell",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        mobileNetworkData.primaryCell?.let { CellInfoItem(it) } ?: Text("No primary cell info", style = MaterialTheme.typography.bodySmall)
+
+                        if (mobileNetworkData.neighboringCells.isNotEmpty()) {
+                            Text(
+                                text = "Neighboring Cells",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                            mobileNetworkData.neighboringCells.forEach {
+                                CellInfoItem(it)
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), thickness = 0.5.dp, color = Color.LightGray)
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun CellInfoItem(cell: CellInfoUiModel) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(
+            text = "Type: ${cell.type}, ID: ${cell.cellId}, LAC/TAC: ${cell.lacTac}",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
+            text = "MCC/MNC: ${cell.mccMnc}, Strength: ${cell.signalStrength}, TA: ${cell.timingAdvance}",
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 
@@ -305,13 +372,13 @@ fun MainScreenDataPreview() {
                         sensorName = "Standard Accelerometer",
                         sensorTimestamp = Instant.fromEpochMilliseconds(1739800000000L),
                         sensorValues = listOf(0.1f, 9.8f, 0.5f)
-                    ),
-                    SensorDataUiModel(
-                        sensorType = 4,
-                        sensorStringType = "Gyroscope",
-                        sensorName = "Standard Gyroscope",
-                        sensorTimestamp = Instant.fromEpochMilliseconds(1739800000500L),
-                        sensorValues = listOf(0.01f, 0.02f, 0.03f)
+                    )
+                ),
+                mobileNetworkData = MobileNetworkDataUiModel(
+                    timestamp = "12:00:05.000",
+                    primaryCell = CellInfoUiModel("LTE", "12345", "6789", "260/02", "-95 dBm", "5"),
+                    neighboringCells = listOf(
+                        CellInfoUiModel("LTE", "12346", "6789", "260/02", "-105 dBm", "N/A")
                     )
                 ),
                 wifiData = listOf(
