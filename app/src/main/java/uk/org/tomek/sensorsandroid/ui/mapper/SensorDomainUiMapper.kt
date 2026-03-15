@@ -1,11 +1,13 @@
 package uk.org.tomek.sensorsandroid.ui.mapper
 
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BeaconInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.CellInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
+import uk.org.tomek.sensorsandroid.ui.model.BarometerDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
 import uk.org.tomek.sensorsandroid.ui.model.MobileNetworkDataUiModel
@@ -50,6 +52,13 @@ class SensorDomainUiMapper {
         timestamp = dateFormat.format(Date(mobileNetworkData.timestamp)),
         primaryCell = mobileNetworkData.primaryCell?.let { toUi(it) },
         neighboringCells = mobileNetworkData.neighboringCells.map { toUi(it) }
+    )
+
+    fun toUi(barometerData: BarometerData): BarometerDataUiModel = BarometerDataUiModel(
+        pressure = String.format(Locale.getDefault(), "%.2f hPa", barometerData.pressure),
+        altitude = String.format(Locale.getDefault(), "%.2f m", barometerData.altitude),
+        accuracy = barometerData.accuracy.toString(),
+        timestamp = dateFormat.format(Date(barometerData.timestamp))
     )
 
     private fun toUi(cellInfo: CellInfo): CellInfoUiModel = CellInfoUiModel(

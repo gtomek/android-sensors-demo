@@ -7,6 +7,7 @@ sealed interface MainUiState {
         val wifiData: List<WifiDataUiModel> = emptyList(),
         val bleData: List<BleDataUiModel> = emptyList(),
         val mobileNetworkData: MobileNetworkDataUiModel? = null,
+        val barometerData: BarometerDataUiModel? = null,
         val locationMessage: String? = null
     ) : MainUiState
 }
