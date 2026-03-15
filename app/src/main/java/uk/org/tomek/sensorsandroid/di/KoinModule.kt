@@ -17,6 +17,6 @@ object KoinModule {
         single { SensorsSdk(get()) }
         single { SensorsRepositoryDefault(get()) } bind SensorsRepository::class
         single { LocationRepositoryDefault(get()) } bind LocationRepository::class
-        viewModel { MainViewModel(get(), get()) }
+        viewModel { MainViewModel(get(), get(), get()) }
     }
 }
