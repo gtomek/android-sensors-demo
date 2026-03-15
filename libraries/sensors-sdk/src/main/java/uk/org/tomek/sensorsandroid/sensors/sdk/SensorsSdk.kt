@@ -34,16 +34,16 @@ class SensorsSdk(
         sensorsListener.stopListening()
     }
 
-    fun startWifiScanning() {
-        wifiScanner.startScanning()
+    fun startWifiScanning(): Result<Unit> {
+        return wifiScanner.startScanning()
     }
 
     fun stopWifiScanning() {
         wifiScanner.stopScanning()
     }
 
-    fun startBleScanning() {
-        bleScanner.startScanning()
+    fun startBleScanning(): Result<Unit> {
+        return bleScanner.startScanning()
     }
 
     fun stopBleScanning() {
@@ -60,5 +60,6 @@ class SensorsSdk(
         sensorsListener.stopListening()
         wifiScanner.stopScanning()
         bleScanner.stopScanning()
+        stopSensors()
     }
 }

@@ -119,12 +119,6 @@ class MainViewModel(
         bleScanRepository.stopScanning()
     }
 
-    fun startWifiScanning() = wifiScanRepository.startScanning()
-    fun stopWifiScanning() = wifiScanRepository.stopScanning()
-
-    fun startBleScanning() = bleScanRepository.startScanning()
-    fun stopBleScanning() = bleScanRepository.stopScanning()
-
     fun changeDisplayType() {
         displayType.update {
             if (it == DisplayType.LIST) DisplayType.LAST_ONLY else DisplayType.LIST

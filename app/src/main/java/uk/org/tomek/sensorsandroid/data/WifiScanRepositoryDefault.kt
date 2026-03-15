@@ -10,11 +10,11 @@ class WifiScanRepositoryDefault(
 ) : WifiScanRepository {
     override val wifiDataFlow: Flow<WifiData> = sensorsSdk.wifiDataFlow
 
-    override fun startScanning() {
-        sensorsSdk.init()
+    override fun startScanning(): Result<Unit> {
+        return sensorsSdk.startWifiScanning()
     }
 
     override fun stopScanning() {
-        sensorsSdk.stopListening()
+        sensorsSdk.stopWifiScanning()
     }
 }

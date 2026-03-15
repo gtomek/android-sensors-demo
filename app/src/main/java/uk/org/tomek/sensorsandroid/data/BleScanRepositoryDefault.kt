@@ -10,8 +10,8 @@ class BleScanRepositoryDefault(
 ) : BleScanRepository {
     override val bleDataFlow: Flow<BleData> = sensorsSdk.bleDataFlow
 
-    override fun startScanning() {
-        sensorsSdk.startBleScanning()
+    override fun startScanning(): Result<Unit> {
+        return sensorsSdk.startBleScanning()
     }
 
     override fun stopScanning() {

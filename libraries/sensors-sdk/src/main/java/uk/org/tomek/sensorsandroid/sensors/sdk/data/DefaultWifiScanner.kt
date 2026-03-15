@@ -44,10 +44,9 @@ class DefaultWifiScanner(private val context: Context) : WifiScanner {
         }
     }
 
-    override fun startScanning() {
+    override fun startScanning(): Result<Unit> {
         if (!hasRequiredPermissions()) {
-            Timber.e("Missing required permissions for WiFi scanning")
-            return
+            return Result.failure(SecurityException("Missing required permissions for WiFi scanning"))
         }
 
         val intentFilter = IntentFilter()
@@ -56,9 +55,11 @@ class DefaultWifiScanner(private val context: Context) : WifiScanner {
 
         @Suppress("DEPRECATION")
         val success = wifiManager.startScan()
-        if (!success) {
-            Timber.w("WiFi scan start failed")
-            processScanResults()
+        return if (success) {
+            Result.success(Unit)
+        } else {
+            processScanResults() // Even if startScan fails, we might still get results from a previous scan
+            Result.failure(IllegalStateException("WiFi scan start failed"))
         }
     }
 
@@ -75,9 +76,6 @@ class DefaultWifiScanner(private val context: Context) : WifiScanner {
         val wifiState = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED
         
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // For Android 13+, NEARBY_WIFI_DEVICES might be needed if not using location, 
-            // but for fingerprinting/location, FINE_LOCATION is still required and often sufficient.
-            // We'll stick to FINE_LOCATION as it's the standard for location-based WiFi scanning.
             fineLocation && wifiState
         } else {
             fineLocation && wifiState

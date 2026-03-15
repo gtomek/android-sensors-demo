@@ -7,6 +7,6 @@ interface WifiScanner {
 
     val wifiDataFlow: Flow<WifiData>
 
-    fun startScanning()
+    fun startScanning(): Result<Unit>
     fun stopScanning()
 }

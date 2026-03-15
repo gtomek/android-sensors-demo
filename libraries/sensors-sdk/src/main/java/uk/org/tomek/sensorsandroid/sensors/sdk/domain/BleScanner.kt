@@ -9,6 +9,6 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 interface BleScanner {
     val bleDataFlow: Flow<BleData>
 
-    fun startScanning()
+    fun startScanning(): Result<Unit>
     fun stopScanning()
 }

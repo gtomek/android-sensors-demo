@@ -1,5 +1,6 @@
 package uk.org.tomek.sensorsandroid.sensors.sdk.data
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -8,8 +9,10 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,6 +22,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BeaconInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 import java.nio.ByteBuffer
 import java.util.UUID
+import androidx.core.util.size
 
 class DefaultBleScanner(private val context: Context) : BleScanner {
 
@@ -48,29 +52,43 @@ class DefaultBleScanner(private val context: Context) : BleScanner {
     }
 
     @SuppressLint("MissingPermission")
-    override fun startScanning() {
-        val scanner = bluetoothAdapter?.bluetoothLeScanner
-        if (scanner == null) {
-            Timber.e("BLE Scanner not available")
-            return
+    override fun startScanning(): Result<Unit> {
+        if (!hasRequiredPermissions()) {
+            return Result.failure(SecurityException("Missing required permissions for BLE scanning"))
         }
+
+        val scanner = bluetoothAdapter?.bluetoothLeScanner
+            ?: return Result.failure(IllegalStateException("BLE Scanner not available"))
 
         scanStartTime = SystemClock.elapsedRealtime()
 
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                    setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-                }
+                setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
             }
             .build()
 
         val filters = listOf<ScanFilter>() // Scan for all
 
-        scanner.startScan(filters, settings, scanCallback)
-        Timber.d("BLE Scanning started")
+        return try {
+            scanner.startScan(filters, settings, scanCallback)
+            Timber.d("BLE Scanning started")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun hasRequiredPermissions(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val scanPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+            val connectPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+            if (!scanPermission || !connectPermission) return false
+        }
+        
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
     @SuppressLint("MissingPermission")
@@ -85,7 +103,7 @@ class DefaultBleScanner(private val context: Context) : BleScanner {
 
         val manufacturerData = mutableMapOf<Int, ByteArray>()
         val sparseManufacturerData = record.manufacturerSpecificData
-        for (i in 0 until sparseManufacturerData.size()) {
+        for (i in 0 until sparseManufacturerData.size) {
             manufacturerData[sparseManufacturerData.keyAt(i)] = sparseManufacturerData.valueAt(i)
         }
 
@@ -93,12 +111,13 @@ class DefaultBleScanner(private val context: Context) : BleScanner {
 
         val beaconInfo = detectBeacon(record.bytes)
 
+        @SuppressLint("MissingPermission")
         val bleData = BleData(
             timestamp = now,
             deviceAddress = result.device.address,
-            deviceName = result.device.name,
+            deviceName = if (hasRequiredPermissions()) result.device.name else null,
             rssi = result.rssi,
-            txPower = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) result.txPower else null,
+            txPower = result.txPower,
             manufacturerData = manufacturerData,
             serviceUuids = serviceUuids,
             advertisingIntervalMillis = null, // Not directly available in ScanResult
@@ -131,7 +150,7 @@ class DefaultBleScanner(private val context: Context) : BleScanner {
         // Eddystone-UID, Eddystone-URL, Eddystone-TLM
         for (i in 0 until scanRecord.size - 5) {
             // Look for Eddystone Service UUID 0xFEAA in Service Data
-            if (scanRecord[i].toInt() == 0xAA && scanRecord[i + 1].toInt() == 0xFE.toInt()) {
+            if (scanRecord[i].toInt() == 0xAA && scanRecord[i + 1].toInt() == 0xFE) {
                 val frameType = scanRecord[i + 2].toInt()
                 when (frameType) {
                     0x00 -> { // UID
