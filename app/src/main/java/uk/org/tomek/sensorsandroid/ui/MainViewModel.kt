@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import org.koin.android.annotation.KoinViewModel
 import timber.log.Timber
+import uk.org.tomek.sensorsandroid.domain.BleScanRepository
 import uk.org.tomek.sensorsandroid.domain.LocationRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
 import uk.org.tomek.sensorsandroid.domain.WifiScanRepository
@@ -22,6 +23,7 @@ class MainViewModel(
     private val sensorsRepository: SensorsRepository,
     private val locationRepository: LocationRepository,
     private val wifiScanRepository: WifiScanRepository,
+    private val bleScanRepository: BleScanRepository,
     private val sensorDataMapper: SensorDomainUiMapper
 ): ViewModel() {
 
@@ -82,19 +84,46 @@ class MainViewModel(
                 }
             }
             .launchIn(viewModelScope)
+
+        bleScanRepository.bleDataFlow
+            .onEach { bleData ->
+                Timber.v("BLE data: $bleData")
+                val uiModel = sensorDataMapper.toUi(bleData)
+                _uiState.update { currentState ->
+                    if (currentState is MainUiState.Data) {
+                        val currentList = currentState.bleData
+                        val updatedList = currentList.toMutableList()
+                        val index = updatedList.indexOfFirst { it.deviceAddress == uiModel.deviceAddress }
+                        if (index != -1) {
+                            updatedList[index] = uiModel
+                        } else {
+                            updatedList.add(uiModel)
+                        }
+                        currentState.copy(bleData = updatedList.sortedByDescending { it.rssi })
+                    } else {
+                        currentState
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun startSensors() {
         sensorsRepository.startSensors()
         wifiScanRepository.startScanning()
+        bleScanRepository.startScanning()
     }
     fun stopSensors() {
         sensorsRepository.stopLeasingSensors()
         wifiScanRepository.stopScanning()
+        bleScanRepository.stopScanning()
     }
 
     fun startWifiScanning() = wifiScanRepository.startScanning()
     fun stopWifiScanning() = wifiScanRepository.stopScanning()
+
+    fun startBleScanning() = bleScanRepository.startScanning()
+    fun stopBleScanning() = bleScanRepository.stopScanning()
 
     fun changeDisplayType() {
         displayType.update {

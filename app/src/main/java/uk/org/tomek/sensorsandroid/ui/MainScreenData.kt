@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.MainUiState
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.WifiDataUiModel
@@ -59,6 +60,7 @@ fun MainScreenData(
         DefaultMainScreenContent(
             sensorData = state.sensorData,
             wifiData = state.wifiData,
+            bleData = state.bleData,
             onStartSensorsClick = onStartSensorsClick,
             onStopSensorsClick = onStopSensorsClick,
             onChangeDisplayTypeClick = onChangeDisplayTypeClick,
@@ -73,6 +75,7 @@ fun MainScreenData(
 private fun DefaultMainScreenContent(
     sensorData: List<SensorDataUiModel>,
     wifiData: List<WifiDataUiModel>,
+    bleData: List<BleDataUiModel>,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
     onChangeDisplayTypeClick: () -> Unit,
@@ -238,6 +241,53 @@ private fun DefaultMainScreenContent(
                     }
                 }
             }
+
+            if (bleData.isNotEmpty()) {
+                stickyHeader {
+                    Text(
+                        text = "BLE Scan Results",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                items(bleData) { ble ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "${ble.deviceName ?: "Unknown"} (${ble.deviceAddress})",
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "RSSI: ${ble.rssi} dBm" + (ble.txPower?.let { ", TxPower: $it dBm" } ?: ""),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        if (ble.beaconInfo != null) {
+                            Text(
+                                text = ble.beaconInfo,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                        Text(
+                            text = "Timestamp: ${ble.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -273,15 +323,16 @@ fun MainScreenDataPreview() {
                         capabilities = "[WPA2-PSK-CCMP][RSN-PSK-CCMP][ESS]",
                         distance = "2.5m (±0.3m)",
                         timestamp = "12:00:00.000"
-                    ),
-                    WifiDataUiModel(
-                        ssid = "Office_WiFi",
-                        bssid = "AA:BB:CC:DD:EE:FF",
-                        rssi = -60,
-                        frequency = 2412,
-                        capabilities = "[WPA2-PSK-CCMP][ESS]",
-                        distance = null,
-                        timestamp = "12:00:01.000"
+                    )
+                ),
+                bleData = listOf(
+                    BleDataUiModel(
+                        deviceAddress = "AA:BB:CC:DD:EE:FF",
+                        deviceName = "Beacon_01",
+                        rssi = -55,
+                        txPower = -12,
+                        beaconInfo = "iBeacon: UUID=..., Major=1, Minor=2",
+                        timestamp = "12:00:02.000"
                     )
                 ),
                 locationMessage = "Location: 52.0, 0.0"

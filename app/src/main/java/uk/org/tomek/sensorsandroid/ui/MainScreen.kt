@@ -27,17 +27,21 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val locationPermissions = mutableListOf(
+    val allRequiredPermissions = mutableListOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     ).apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(Manifest.permission.NEARBY_WIFI_DEVICES)
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            add(Manifest.permission.BLUETOOTH_SCAN)
+            add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
     }.toTypedArray()
 
-    fun hasLocationPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
+    fun hasRequiredPermissions(): Boolean {
+        val hasLocation = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED ||
@@ -45,6 +49,30 @@ fun MainScreen(
                     context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
+
+        val hasBluetooth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        val hasNearbyWifi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.NEARBY_WIFI_DEVICES
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        return hasLocation && hasBluetooth && hasNearbyWifi
     }
 
     val sensorsPermissionLauncher = rememberLauncherForActivityResult(
@@ -67,10 +95,10 @@ fun MainScreen(
         launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>,
         action: () -> Unit
     ) {
-        if (hasLocationPermission()) {
+        if (hasRequiredPermissions()) {
             action()
         } else {
-            launcher.launch(locationPermissions)
+            launcher.launch(allRequiredPermissions)
         }
     }
 
