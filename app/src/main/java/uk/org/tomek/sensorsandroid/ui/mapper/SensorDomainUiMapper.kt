@@ -1,15 +1,18 @@
 package uk.org.tomek.sensorsandroid.ui.mapper
 
+import android.view.Surface
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BeaconInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.CellInfo
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
 import uk.org.tomek.sensorsandroid.ui.model.BarometerDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
+import uk.org.tomek.sensorsandroid.ui.model.DeviceInfoUiModel
 import uk.org.tomek.sensorsandroid.ui.model.MobileNetworkDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.WifiDataUiModel
@@ -60,6 +63,29 @@ class SensorDomainUiMapper {
         accuracy = barometerData.accuracy.toString(),
         timestamp = dateFormat.format(Date(barometerData.timestamp))
     )
+
+    fun toUi(deviceInfo: DeviceInfo): DeviceInfoUiModel {
+        val metadata = deviceInfo.metadata
+        val context = deviceInfo.context
+        
+        return DeviceInfoUiModel(
+            model = metadata.model,
+            manufacturer = metadata.manufacturer,
+            androidVersion = "${metadata.androidVersion} (API ${metadata.sdkVersion})",
+            batteryInfo = "${(context.batteryLevel * 100).toInt()}% (${if (context.isCharging) "Charging" else "Discharging"})",
+            screenState = if (context.isScreenOn) "On" else "Off",
+            orientation = when (context.orientation) {
+                Surface.ROTATION_0 -> "Portrait"
+                Surface.ROTATION_90 -> "Landscape"
+                Surface.ROTATION_180 -> "Reverse Portrait"
+                Surface.ROTATION_270 -> "Reverse Landscape"
+                else -> "Unknown"
+            },
+            powerSaveMode = if (context.isPowerSaveMode) "Enabled" else "Disabled",
+            foregroundApp = context.foregroundApp ?: "Unknown",
+            sensorCount = metadata.sensors.size
+        )
+    }
 
     private fun toUi(cellInfo: CellInfo): CellInfoUiModel = CellInfoUiModel(
         type = cellInfo.type,

@@ -27,8 +27,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import uk.org.tomek.sensorsandroid.ui.model.BarometerDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
+import uk.org.tomek.sensorsandroid.ui.model.DeviceInfoUiModel
 import uk.org.tomek.sensorsandroid.ui.model.MainUiState
 import uk.org.tomek.sensorsandroid.ui.model.MobileNetworkDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.SensorDataUiModel
@@ -65,6 +67,8 @@ fun MainScreenData(
             wifiData = state.wifiData,
             bleData = state.bleData,
             mobileNetworkData = state.mobileNetworkData,
+            barometerData = state.barometerData,
+            deviceInfo = state.deviceInfo,
             onStartSensorsClick = onStartSensorsClick,
             onStopSensorsClick = onStopSensorsClick,
             onChangeDisplayTypeClick = onChangeDisplayTypeClick,
@@ -81,6 +85,8 @@ private fun DefaultMainScreenContent(
     wifiData: List<WifiDataUiModel>,
     bleData: List<BleDataUiModel>,
     mobileNetworkData: MobileNetworkDataUiModel?,
+    barometerData: BarometerDataUiModel?,
+    deviceInfo: DeviceInfoUiModel?,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
     onChangeDisplayTypeClick: () -> Unit,
@@ -155,6 +161,38 @@ private fun DefaultMainScreenContent(
                 .weight(1f)
                 .padding(top = 16.dp)
         ) {
+            if (deviceInfo != null) {
+                stickyHeader {
+                    Text(
+                        text = "Device Information",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFBBDEFB))
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF0D47A1)
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(text = "Manufacturer: ${deviceInfo.manufacturer}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Model: ${deviceInfo.model}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Android: ${deviceInfo.androidVersion}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Battery: ${deviceInfo.batteryInfo}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Screen: ${deviceInfo.screenState}, Orientation: ${deviceInfo.orientation}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Power Save: ${deviceInfo.powerSaveMode}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Foreground App: ${deviceInfo.foregroundApp}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Sensors detected: ${deviceInfo.sensorCount}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+
             groupedSensorData.forEach { (sensorName, sensors) ->
                 stickyHeader {
                     Text(
@@ -190,6 +228,96 @@ private fun DefaultMainScreenContent(
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.Gray
                         )
+                    }
+                }
+            }
+
+            if (barometerData != null) {
+                stickyHeader {
+                    Text(
+                        text = "Barometer Info (Floor Detection)",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFFFF9C4))
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFFFBC02D)
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Pressure: ${barometerData.pressure}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Est. Altitude: ${barometerData.altitude}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Accuracy: ${barometerData.accuracy}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Timestamp: ${barometerData.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            if (mobileNetworkData != null) {
+                stickyHeader {
+                    Text(
+                        text = "Mobile Network Info",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFE1BEE7))
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF4A148C)
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Timestamp: ${mobileNetworkData.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "Primary Cell",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        mobileNetworkData.primaryCell?.let { CellInfoItem(it) } ?: Text("No primary cell info", style = MaterialTheme.typography.bodySmall)
+
+                        if (mobileNetworkData.neighboringCells.isNotEmpty()) {
+                            Text(
+                                text = "Neighboring Cells",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                            mobileNetworkData.neighboringCells.forEach {
+                                CellInfoItem(it)
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), thickness = 0.5.dp, color = Color.LightGray)
+                            }
+                        }
                     }
                 }
             }
@@ -293,54 +421,6 @@ private fun DefaultMainScreenContent(
                     }
                 }
             }
-
-            if (mobileNetworkData != null) {
-                stickyHeader {
-                    Text(
-                        text = "Mobile Network Info",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFFE1BEE7))
-                            .padding(8.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color(0xFF4A148C)
-                    )
-                }
-
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "Timestamp: ${mobileNetworkData.timestamp}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray
-                        )
-                        Text(
-                            text = "Primary Cell",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        mobileNetworkData.primaryCell?.let { CellInfoItem(it) } ?: Text("No primary cell info", style = MaterialTheme.typography.bodySmall)
-
-                        if (mobileNetworkData.neighboringCells.isNotEmpty()) {
-                            Text(
-                                text = "Neighboring Cells",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-                            mobileNetworkData.neighboringCells.forEach {
-                                CellInfoItem(it)
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), thickness = 0.5.dp, color = Color.LightGray)
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -373,6 +453,23 @@ fun MainScreenDataPreview() {
                         sensorTimestamp = Instant.fromEpochMilliseconds(1739800000000L),
                         sensorValues = listOf(0.1f, 9.8f, 0.5f)
                     )
+                ),
+                deviceInfo = DeviceInfoUiModel(
+                    model = "Pixel 7",
+                    manufacturer = "Google",
+                    androidVersion = "14 (API 34)",
+                    batteryInfo = "85% (Charging)",
+                    screenState = "On",
+                    orientation = "Portrait",
+                    powerSaveMode = "Disabled",
+                    foregroundApp = "uk.org.tomek.sensorsandroid",
+                    sensorCount = 42
+                ),
+                barometerData = BarometerDataUiModel(
+                    pressure = "1013.25 hPa",
+                    altitude = "10.5 m",
+                    accuracy = "3",
+                    timestamp = "12:00:06.000"
                 ),
                 mobileNetworkData = MobileNetworkDataUiModel(
                     timestamp = "12:00:05.000",

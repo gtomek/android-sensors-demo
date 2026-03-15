@@ -12,6 +12,7 @@ import org.koin.android.annotation.KoinViewModel
 import timber.log.Timber
 import uk.org.tomek.sensorsandroid.domain.BarometerRepository
 import uk.org.tomek.sensorsandroid.domain.BleScanRepository
+import uk.org.tomek.sensorsandroid.domain.DeviceInfoRepository
 import uk.org.tomek.sensorsandroid.domain.LocationRepository
 import uk.org.tomek.sensorsandroid.domain.MobileNetworksRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
@@ -28,6 +29,7 @@ class MainViewModel(
     private val bleScanRepository: BleScanRepository,
     private val mobileNetworksRepository: MobileNetworksRepository,
     private val barometerRepository: BarometerRepository,
+    private val deviceInfoRepository: DeviceInfoRepository,
     private val sensorDataMapper: SensorDomainUiMapper
 ) : ViewModel() {
 
@@ -38,7 +40,10 @@ class MainViewModel(
 
     init {
         // Initialize with empty data after "Loading"
-        _uiState.value = MainUiState.Data(sensorData = emptyList())
+        _uiState.value = MainUiState.Data(
+            sensorData = emptyList(),
+            deviceInfo = sensorDataMapper.toUi(deviceInfoRepository.getDeviceInfo())
+        )
 
         sensorsRepository.sensorDataFlow
             .onEach { sensorData ->
@@ -160,6 +165,15 @@ class MainViewModel(
             .onFailure {
                 Timber.e(it, "Failed to start barometer listening")
             }
+        
+        // Refresh device info when starting sensors to catch context changes
+        _uiState.update { currentState ->
+            if (currentState is MainUiState.Data) {
+                currentState.copy(deviceInfo = sensorDataMapper.toUi(deviceInfoRepository.getDeviceInfo()))
+            } else {
+                currentState
+            }
+        }
     }
 
     fun stopSensors() {

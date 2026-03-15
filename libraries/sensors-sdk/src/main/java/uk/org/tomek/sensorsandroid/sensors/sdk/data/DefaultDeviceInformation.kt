@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.hardware.display.DisplayManager
 import android.os.BatteryManager
 import android.os.Build
 import android.os.PowerManager
@@ -21,7 +22,9 @@ class DefaultDeviceInformation(private val context: Context) : DeviceInformation
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-    private val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    private val activityManager =
+        context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    private val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
     override fun getDeviceInformation(): DeviceInfo {
         return DeviceInfo(
@@ -66,17 +69,26 @@ class DefaultDeviceInformation(private val context: Context) : DeviceInformation
         val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        
-        val display: Display? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.display
-        } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay
+        val display: Display? = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                try {
+                    context.display
+                } catch (e: UnsupportedOperationException) {
+                    displayManager.getDisplay(Display.DEFAULT_DISPLAY)
+                }
+            } else {
+                val windowManager =
+                    context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                @Suppress("DEPRECATION")
+                windowManager.defaultDisplay
+            }
+        } catch (e: Exception) {
+            displayManager.getDisplay(Display.DEFAULT_DISPLAY)
         }
+
         val orientation = display?.rotation ?: -1
 
-        val isScreenOn = display?.state == Display.STATE_ON
+        val isScreenOn = powerManager.isInteractive
 
         val isPowerSaveMode = powerManager.isPowerSaveMode
 

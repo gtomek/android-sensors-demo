@@ -5,12 +5,14 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import uk.org.tomek.sensorsandroid.data.BarometerRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.BleScanRepositoryDefault
+import uk.org.tomek.sensorsandroid.data.DeviceInfoRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.LocationRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.MobileNetworksRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.SensorsRepositoryDefault
 import uk.org.tomek.sensorsandroid.data.WifiScanRepositoryDefault
 import uk.org.tomek.sensorsandroid.domain.BarometerRepository
 import uk.org.tomek.sensorsandroid.domain.BleScanRepository
+import uk.org.tomek.sensorsandroid.domain.DeviceInfoRepository
 import uk.org.tomek.sensorsandroid.domain.LocationRepository
 import uk.org.tomek.sensorsandroid.domain.MobileNetworksRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
@@ -29,6 +31,7 @@ object KoinModule {
         single { BleScanRepositoryDefault(get()) } bind BleScanRepository::class
         single { MobileNetworksRepositoryDefault(get()) } bind MobileNetworksRepository::class
         single { BarometerRepositoryDefault(get()) } bind BarometerRepository::class
-        viewModel { MainViewModel(get(), get(), get(), get(), get(), get(), get()) }
+        single { DeviceInfoRepositoryDefault(get()) } bind DeviceInfoRepository::class
+        viewModel { MainViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }
 }
