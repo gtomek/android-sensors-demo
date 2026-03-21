@@ -21,7 +21,6 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.WifiScanner
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData

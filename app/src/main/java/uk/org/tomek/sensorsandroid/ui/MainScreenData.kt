@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import uk.org.tomek.sensorsandroid.ui.model.ActivityDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BarometerDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
@@ -68,6 +69,7 @@ fun MainScreenData(
             bleData = state.bleData,
             mobileNetworkData = state.mobileNetworkData,
             barometerData = state.barometerData,
+            activityData = state.activityData,
             deviceInfo = state.deviceInfo,
             onStartSensorsClick = onStartSensorsClick,
             onStopSensorsClick = onStopSensorsClick,
@@ -86,6 +88,7 @@ private fun DefaultMainScreenContent(
     bleData: List<BleDataUiModel>,
     mobileNetworkData: MobileNetworkDataUiModel?,
     barometerData: BarometerDataUiModel?,
+    activityData: ActivityDataUiModel?,
     deviceInfo: DeviceInfoUiModel?,
     onStartSensorsClick: () -> Unit,
     onStopSensorsClick: () -> Unit,
@@ -421,6 +424,44 @@ private fun DefaultMainScreenContent(
                     }
                 }
             }
+
+            if (activityData != null) {
+                stickyHeader {
+                    Text(
+                        text = "Activity Recognition",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFC8E6C9))
+                            .padding(8.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF2E7D32)
+                    )
+                }
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Detected Activity: ${activityData.type}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Confidence: ${activityData.confidence}%",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Timestamp: ${activityData.timestamp}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -498,6 +539,11 @@ fun MainScreenDataPreview() {
                         beaconInfo = "iBeacon: UUID=..., Major=1, Minor=2",
                         timestamp = "12:00:02.000"
                     )
+                ),
+                activityData = ActivityDataUiModel(
+                    type = "WALKING",
+                    confidence = "95",
+                    timestamp = "12:00:08.000"
                 ),
                 locationMessage = "Location: 52.0, 0.0"
             ),

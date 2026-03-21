@@ -1,6 +1,8 @@
 package uk.org.tomek.sensorsandroid.ui.mapper
 
 import android.view.Surface
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityData
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityType
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BeaconInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
@@ -9,6 +11,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
+import uk.org.tomek.sensorsandroid.ui.model.ActivityDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BarometerDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.BleDataUiModel
 import uk.org.tomek.sensorsandroid.ui.model.CellInfoUiModel
@@ -62,6 +65,19 @@ class SensorDomainUiMapper {
         altitude = String.format(Locale.getDefault(), "%.2f m", barometerData.altitude),
         accuracy = barometerData.accuracy.toString(),
         timestamp = dateFormat.format(Date(barometerData.timestamp))
+    )
+
+    fun toUi(activityData: ActivityData): ActivityDataUiModel = ActivityDataUiModel(
+        type = when (activityData.type) {
+            ActivityType.STILL -> "Still"
+            ActivityType.WALKING -> "Walking"
+            ActivityType.RUNNING -> "Running"
+            ActivityType.ON_BICYCLE -> "On Bicycle"
+            ActivityType.IN_VEHICLE -> "In Vehicle"
+            ActivityType.UNKNOWN -> "Unknown"
+        },
+        confidence = "${activityData.confidence}%",
+        timestamp = dateFormat.format(Date(activityData.timestamp))
     )
 
     fun toUi(deviceInfo: DeviceInfo): DeviceInfoUiModel {

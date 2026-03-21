@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import org.koin.android.annotation.KoinViewModel
 import timber.log.Timber
+import uk.org.tomek.sensorsandroid.domain.ActivityRepository
 import uk.org.tomek.sensorsandroid.domain.BarometerRepository
 import uk.org.tomek.sensorsandroid.domain.BleScanRepository
 import uk.org.tomek.sensorsandroid.domain.DeviceInfoRepository
@@ -29,6 +30,7 @@ class MainViewModel(
     private val bleScanRepository: BleScanRepository,
     private val mobileNetworksRepository: MobileNetworksRepository,
     private val barometerRepository: BarometerRepository,
+    private val activityRepository: ActivityRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
     private val sensorDataMapper: SensorDomainUiMapper
 ) : ViewModel() {
@@ -145,6 +147,20 @@ class MainViewModel(
                 }
             }
             .launchIn(viewModelScope)
+
+        activityRepository.activityDataFlow
+            .onEach { activityData ->
+                Timber.v("Activity data: $activityData")
+                val uiModel = sensorDataMapper.toUi(activityData)
+                _uiState.update { currentState ->
+                    if (currentState is MainUiState.Data) {
+                        currentState.copy(activityData = uiModel)
+                    } else {
+                        currentState
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun startSensors() {
@@ -165,6 +181,10 @@ class MainViewModel(
             .onFailure {
                 Timber.e(it, "Failed to start barometer listening")
             }
+        activityRepository.startActivityRecognition()
+            .onFailure {
+                Timber.e(it, "Failed to start activity recognition")
+            }
         
         // Refresh device info when starting sensors to catch context changes
         _uiState.update { currentState ->
@@ -182,6 +202,7 @@ class MainViewModel(
         bleScanRepository.stopScanning()
         mobileNetworksRepository.stopScanning()
         barometerRepository.stopListening()
+        activityRepository.stopActivityRecognition()
     }
 
     fun changeDisplayType() {

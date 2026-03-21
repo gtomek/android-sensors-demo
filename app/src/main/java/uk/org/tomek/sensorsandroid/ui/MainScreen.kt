@@ -32,6 +32,9 @@ fun MainScreen(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.READ_PHONE_STATE
     ).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             add(Manifest.permission.NEARBY_WIFI_DEVICES)
         }
@@ -51,6 +54,15 @@ fun MainScreen(
             context,
             Manifest.permission.READ_PHONE_STATE
         ) == PackageManager.PERMISSION_GRANTED
+
+        val hasActivity = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
 
         val hasBluetooth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ContextCompat.checkSelfPermission(
@@ -74,7 +86,7 @@ fun MainScreen(
             true
         }
 
-        return hasLocation && hasPhoneState && hasBluetooth && hasNearbyWifi
+        return hasLocation && hasPhoneState && hasActivity && hasBluetooth && hasNearbyWifi
     }
 
     val sensorsPermissionLauncher = rememberLauncherForActivityResult(
