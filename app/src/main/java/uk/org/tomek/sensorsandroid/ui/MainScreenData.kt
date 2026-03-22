@@ -50,17 +50,17 @@ fun MainScreenData(
     onLocationMessageShown: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.locationMessage) {
         state.locationMessage?.let {
-            snackbarHostState.showSnackbar(it)
+            snackBarHostState.showSnackbar(it)
             onLocationMessageShown()
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
         DefaultMainScreenContent(
@@ -103,7 +103,7 @@ private fun DefaultMainScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
 
         Text(
