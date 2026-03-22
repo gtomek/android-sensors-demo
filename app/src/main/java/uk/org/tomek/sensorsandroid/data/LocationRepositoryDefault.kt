@@ -6,6 +6,6 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.SensorsSdk
 
 class LocationRepositoryDefault(private val sensorsSdk: SensorsSdk) : LocationRepository {
     override fun getLastKnownLocation(): Result<Location> {
-        return sensorsSdk.locationHandler.getLastKnownLocation()
+        return sensorsSdk.getLastKnownLocation()
     }
 }

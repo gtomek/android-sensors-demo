@@ -22,10 +22,10 @@ class SensorsRepositoryDefault(
     }
 
     override fun getDeviceInfo(): DeviceInfo {
-        return sensorsSdk.deviceInformation.getDeviceInformation()
+        return sensorsSdk.getDeviceInformation()
     }
 
     override fun getLastKnownLocation(): Result<Location> {
-        return sensorsSdk.locationHandler.getLastKnownLocation()
+        return sensorsSdk.getLastKnownLocation()
     }
 }

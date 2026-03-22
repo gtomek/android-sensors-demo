@@ -1,6 +1,7 @@
 package uk.org.tomek.sensorsandroid.sensors.sdk
 
 import android.content.Context
+import android.location.Location
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -20,6 +21,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.LocationHandler
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.MobileNetworksScanner
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.WifiScanner
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkConfig
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkResult
 
@@ -33,9 +35,9 @@ class SensorsSdk(
     private val mobileNetworksScanner: MobileNetworksScanner = DefaultMobileNetworksScanner(context)
     private val barometerCollector: BarometerCollector = DefaultBarometerCollector(context)
     private val activityRecognizer: ActivityRecognizer = DefaultActivityRecognizer(context)
-    val locationHandler: LocationHandler = DefaultLocationHandler(context)
+    private val locationHandler: LocationHandler = DefaultLocationHandler(context)
 
-    val deviceInformation: DeviceInformation = DefaultDeviceInformation(context)
+    private val deviceInformation: DeviceInformation = DefaultDeviceInformation(context)
 
     val scanResults: Flow<SensorsSdkResult> = merge(
         sensorsListener.sensorDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = it, wifiData = null, bleData = null, mobileNetworkData = null, barometerData = null, activityData = null) },
@@ -62,5 +64,13 @@ class SensorsSdk(
         mobileNetworksScanner.stopScanning()
         barometerCollector.stopListening()
         activityRecognizer.stopListening()
+    }
+
+    fun getDeviceInformation(): DeviceInfo {
+        return deviceInformation.getDeviceInformation()
+    }
+
+    fun getLastKnownLocation(): Result<Location> {
+        return locationHandler.getLastKnownLocation()
     }
 }

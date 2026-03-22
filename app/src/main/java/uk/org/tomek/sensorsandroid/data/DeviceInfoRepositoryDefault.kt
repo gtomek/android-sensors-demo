@@ -8,6 +8,6 @@ class DeviceInfoRepositoryDefault(
     private val sensorsSdk: SensorsSdk
 ) : DeviceInfoRepository {
     override fun getDeviceInfo(): DeviceInfo {
-        return sensorsSdk.deviceInformation.getDeviceInformation()
+        return sensorsSdk.getDeviceInformation()
     }
 }
