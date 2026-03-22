@@ -6,7 +6,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 /**
  * Bluetooth Low Energy (BLE) Beacons scanner.
  */
-interface BleScanner {
+internal interface BleScanner {
     val bleDataFlow: Flow<BleData>
 
     fun startScanning(): Result<Unit>

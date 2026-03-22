@@ -3,7 +3,7 @@ package uk.org.tomek.sensorsandroid.sensors.sdk.domain
 import kotlinx.coroutines.flow.Flow
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 
-interface BarometerCollector {
+internal interface BarometerCollector {
 
     val barometerDataFlow : Flow<BarometerData>
 

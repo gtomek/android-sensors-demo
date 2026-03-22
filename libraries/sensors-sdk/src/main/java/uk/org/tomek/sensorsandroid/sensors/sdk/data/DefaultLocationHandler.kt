@@ -8,7 +8,7 @@ import android.location.LocationManager
 import androidx.core.content.ContextCompat
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.LocationHandler
 
-class DefaultLocationHandler(private val context: Context) : LocationHandler {
+internal class DefaultLocationHandler(private val context: Context) : LocationHandler {
     override fun getLastKnownLocation(): Result<Location> {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
             ?: return Result.failure(IllegalStateException("LocationManager not available"))

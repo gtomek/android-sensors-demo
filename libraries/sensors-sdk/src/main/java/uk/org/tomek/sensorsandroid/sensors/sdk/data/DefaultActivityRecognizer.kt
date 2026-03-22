@@ -19,7 +19,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.ActivityRecognizer
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityType
 
-class DefaultActivityRecognizer(private val context: Context) : ActivityRecognizer {
+internal class DefaultActivityRecognizer(private val context: Context) : ActivityRecognizer {
 
     private val activityRecognitionClient = ActivityRecognition.getClient(context)
     private val pendingIntent: PendingIntent by lazy {

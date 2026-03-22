@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
-class DefaultMobileNetworksScanner(private val context: Context) : MobileNetworksScanner {
+internal class DefaultMobileNetworksScanner(private val context: Context) : MobileNetworksScanner {
 
     private val telephonyManager =
         context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager

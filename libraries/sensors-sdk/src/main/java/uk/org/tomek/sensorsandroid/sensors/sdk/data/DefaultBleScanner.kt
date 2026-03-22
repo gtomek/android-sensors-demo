@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import androidx.core.util.size
 
-class DefaultBleScanner(private val context: Context) : BleScanner {
+internal class DefaultBleScanner(private val context: Context) : BleScanner {
 
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter

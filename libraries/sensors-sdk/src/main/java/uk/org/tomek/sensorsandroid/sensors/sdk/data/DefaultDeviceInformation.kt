@@ -18,7 +18,7 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceInfo
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.DeviceMetadata
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorMetadata
 
-class DefaultDeviceInformation(private val context: Context) : DeviceInformation {
+internal class DefaultDeviceInformation(private val context: Context) : DeviceInformation {
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager

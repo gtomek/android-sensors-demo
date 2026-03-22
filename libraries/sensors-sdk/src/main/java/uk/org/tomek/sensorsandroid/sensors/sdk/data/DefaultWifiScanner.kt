@@ -22,7 +22,7 @@ import timber.log.Timber
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.WifiScanner
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
 
-class DefaultWifiScanner(private val context: Context) : WifiScanner {
+internal class DefaultWifiScanner(private val context: Context) : WifiScanner {
 
     private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     private val wifiRttManager = context.applicationContext.getSystemService(Context.WIFI_RTT_RANGING_SERVICE) as? WifiRttManager

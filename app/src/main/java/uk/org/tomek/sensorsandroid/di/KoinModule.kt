@@ -17,7 +17,7 @@ import uk.org.tomek.sensorsandroid.ui.mapper.SensorDomainUiMapper
 object KoinModule {
     val appModule = module {
         single { SensorDomainUiMapper() }
-        single { SensorsSdk(get(), SensorsSdkConfig()) }
+        single { SensorsSdk.init(get(), SensorsSdkConfig())} bind SensorsSdk::class
         single { SensorsRepositoryDefault(get()) } bind SensorsRepository::class
         single { LocationRepositoryDefault(get()) } bind LocationRepository::class
         single { DeviceInfoRepositoryDefault(get()) } bind DeviceInfoRepository::class
