@@ -2,6 +2,8 @@ package uk.org.tomek.sensorsandroid.sensors.sdk
 
 import android.content.Context
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultActivityRecognizer
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultBarometerCollector
 import uk.org.tomek.sensorsandroid.sensors.sdk.data.DefaultBleScanner
@@ -18,17 +20,12 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.LocationHandler
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.MobileNetworksScanner
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.SensorsListener
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.WifiScanner
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.ActivityData
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkConfig
-import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkResult
 
 class SensorsSdk(
     context: Context,
-    config: SensorsSdkConfig = SensorsSdkConfig()
+    private val config: SensorsSdkConfig = SensorsSdkConfig()
 ) {
     private val sensorsListener: SensorsListener = DefaultSensorsListener(context)
     private val wifiScanner: WifiScanner = DefaultWifiScanner(context)
@@ -40,78 +37,30 @@ class SensorsSdk(
 
     val deviceInformation: DeviceInformation = DefaultDeviceInformation(context)
 
-    val sensorDataFlow: Flow<SensorData> = sensorsListener.sensorDataFlow
-    val wifiDataFlow: Flow<WifiData> = wifiScanner.wifiDataFlow
-    val bleDataFlow: Flow<BleData> = bleScanner.bleDataFlow
-    val mobileNetworkDataFlow: Flow<MobileNetworkData> = mobileNetworksScanner.mobileNetworkDataFlow
-    val barometerDataFlow: Flow<BarometerData> = barometerCollector.barometerDataFlow
-    val activityDataFlow: Flow<ActivityData> = activityRecognizer.activityDataFlow
+    val scanResults: Flow<SensorsSdkResult> = merge(
+        sensorsListener.sensorDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = it, wifiData = null, bleData = null, mobileNetworkData = null, barometerData = null, activityData = null) },
+        wifiScanner.wifiDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = null, wifiData = it, bleData = null, mobileNetworkData = null, barometerData = null, activityData = null) },
+        bleScanner.bleDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = null, wifiData = null, bleData = it, mobileNetworkData = null, barometerData = null, activityData = null) },
+        mobileNetworksScanner.mobileNetworkDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = null, wifiData = null, bleData = null, mobileNetworkData = it, barometerData = null, activityData = null) },
+        barometerCollector.barometerDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = null, wifiData = null, bleData = null, mobileNetworkData = null, barometerData = it, activityData = null) },
+        activityRecognizer.activityDataFlow.map { SensorsSdkResult.SuccessEvent(sensor = null, wifiData = null, bleData = null, mobileNetworkData = null, barometerData = null, activityData = it) }
+    )
 
-    fun startSensors() {
-        sensorsListener.startListening()
+    fun start() {
+        if (config.isSensorDataEnabled) sensorsListener.startListening()
+        if (config.isWifiScanningEnabled) wifiScanner.startScanning()
+        if (config.isBleScanningEnabled) bleScanner.startScanning()
+        if (config.isMobileNetworkScanningEnabled) mobileNetworksScanner.startScanning()
+        if (config.isBarometerListeningEnabled) barometerCollector.startListening()
+        if (config.isActivityRecognitionEnabled) activityRecognizer.startListening()
     }
 
-    fun stopSensors() {
-        sensorsListener.stopListening()
-    }
-
-    fun startWifiScanning(): Result<Unit> {
-        return wifiScanner.startScanning()
-    }
-
-    fun stopWifiScanning() {
-        wifiScanner.stopScanning()
-    }
-
-    fun startBleScanning(): Result<Unit> {
-        return bleScanner.startScanning()
-    }
-
-    fun stopBleScanning() {
-        bleScanner.stopScanning()
-    }
-
-    fun startMobileNetworksScanning(): Result<Unit> {
-        return mobileNetworksScanner.startScanning()
-    }
-
-    fun stopMobileNetworksScanning() {
-        mobileNetworksScanner.stopScanning()
-    }
-
-    fun startBarometerListening(): Result<Unit> {
-        return barometerCollector.startListening()
-    }
-
-    fun stopBarometerListening() {
-        barometerCollector.stopListening()
-    }
-
-    fun startActivityRecognition(): Result<Unit> {
-        return activityRecognizer.startListening()
-    }
-
-    fun stopActivityRecognition() {
-        activityRecognizer.stopListening()
-    }
-
-    fun init() {
-        startSensors()
-        startWifiScanning()
-        startBleScanning()
-        startMobileNetworksScanning()
-        startBarometerListening()
-        startActivityRecognition()
-    }
-
-    fun stopListening() {
+    fun stop() {
         sensorsListener.stopListening()
         wifiScanner.stopScanning()
         bleScanner.stopScanning()
         mobileNetworksScanner.stopScanning()
         barometerCollector.stopListening()
         activityRecognizer.stopListening()
-        stopSensors()
-        stopMobileNetworksScanning()
     }
 }
