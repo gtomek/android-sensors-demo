@@ -20,13 +20,14 @@ import uk.org.tomek.sensorsandroid.domain.MobileNetworksRepository
 import uk.org.tomek.sensorsandroid.domain.SensorsRepository
 import uk.org.tomek.sensorsandroid.domain.WifiScanRepository
 import uk.org.tomek.sensorsandroid.sensors.sdk.SensorsSdk
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkConfig
 import uk.org.tomek.sensorsandroid.ui.MainViewModel
 import uk.org.tomek.sensorsandroid.ui.mapper.SensorDomainUiMapper
 
 object KoinModule {
     val appModule = module {
         single { SensorDomainUiMapper() }
-        single { SensorsSdk(get()) }
+        single { SensorsSdk(get(), SensorsSdkConfig()) }
         single { SensorsRepositoryDefault(get()) } bind SensorsRepository::class
         single { LocationRepositoryDefault(get()) } bind LocationRepository::class
         single { WifiScanRepositoryDefault(get()) } bind WifiScanRepository::class

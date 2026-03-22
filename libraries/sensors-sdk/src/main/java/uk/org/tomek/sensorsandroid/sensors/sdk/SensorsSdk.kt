@@ -23,10 +23,12 @@ import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BarometerData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.BleData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.MobileNetworkData
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorData
+import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.SensorsSdkConfig
 import uk.org.tomek.sensorsandroid.sensors.sdk.domain.model.WifiData
 
 class SensorsSdk(
     context: Context,
+    config: SensorsSdkConfig = SensorsSdkConfig()
 ) {
     private val sensorsListener: SensorsListener = DefaultSensorsListener(context)
     private val wifiScanner: WifiScanner = DefaultWifiScanner(context)
