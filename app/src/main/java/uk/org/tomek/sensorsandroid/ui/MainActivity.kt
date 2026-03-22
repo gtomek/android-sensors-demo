@@ -17,9 +17,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SensorsAndroidTheme {
-                Scaffold(modifier = Modifier.Companion.fillMaxSize()) { innerPadding ->
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MainScreen(
-                        modifier = Modifier.Companion.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
