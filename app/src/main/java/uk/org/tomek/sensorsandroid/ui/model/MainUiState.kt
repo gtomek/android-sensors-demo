@@ -12,4 +12,9 @@ sealed interface MainUiState {
         val deviceInfo: DeviceInfoUiModel? = null,
         val locationMessage: String? = null
     ) : MainUiState
+
+    sealed interface Error : MainUiState {
+        data class Generic(val message: String) : Error
+        data class Permissions(val permissions: List<String>) : Error
+    }
 }

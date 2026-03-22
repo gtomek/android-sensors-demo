@@ -1,5 +1,6 @@
 package uk.org.tomek.sensorsandroid.ui
 
+import android.Manifest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,10 +42,22 @@ class MainViewModel(
 
         sensorsRepository.scanResults
             .onEach { result ->
-                if (result is SensorsSdkResult.SuccessEvent) {
-                    _uiState.update { currentState ->
-                        if (currentState is MainUiState.Data) {
-                            var newState: MainUiState.Data = currentState
+                when (result) {
+                    is SensorsSdkResult.SuccessEvent -> {
+                        _uiState.update { currentState ->
+                            val dataState = when (currentState) {
+                                is MainUiState.Data -> currentState
+                                is MainUiState.Error -> {
+                                    // If we were in error state, we recover to the last known data or empty data
+                                    MainUiState.Data(
+                                        sensorData = emptyList(),
+                                        deviceInfo = sensorDataMapper.toUi(deviceInfoRepository.getDeviceInfo())
+                                    )
+                                }
+                                else -> return@update currentState
+                            }
+
+                            var newState: MainUiState.Data = dataState
 
                             result.sensor?.let { sensorData ->
                                 Timber.v("Sensor data: $sensorData")
@@ -119,9 +132,15 @@ class MainViewModel(
                             }
 
                             newState
-                        } else {
-                            currentState
                         }
+                    }
+
+                    is SensorsSdkResult.Error.PermissionError -> {
+                        _uiState.value = MainUiState.Error.Permissions(result.permissions)
+                    }
+
+                    is SensorsSdkResult.Error -> {
+                        _uiState.value = MainUiState.Error.Generic(result.message)
                     }
                 }
             }
@@ -169,7 +188,16 @@ class MainViewModel(
                 updateLocationMessage("Location: ${location.latitude}, ${location.longitude}")
             }
             .onFailure { error ->
-                updateLocationMessage("Error: ${error.message}")
+                if (error is SecurityException) {
+                    _uiState.value = MainUiState.Error.Permissions(
+                        listOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                } else {
+                    updateLocationMessage("Error: ${error.message}")
+                }
             }
     }
 
@@ -187,6 +215,21 @@ class MainViewModel(
         _uiState.update { currentState ->
             if (currentState is MainUiState.Data) {
                 currentState.copy(locationMessage = null)
+            } else {
+                currentState
+            }
+        }
+    }
+
+    fun onPermissionsRequested() {
+        // After permissions are requested, we assume we might get data or another error.
+        // If we want to clear the error state and show empty data:
+        _uiState.update { currentState ->
+            if (currentState is MainUiState.Error) {
+                MainUiState.Data(
+                    sensorData = emptyList(),
+                    deviceInfo = sensorDataMapper.toUi(deviceInfoRepository.getDeviceInfo())
+                )
             } else {
                 currentState
             }

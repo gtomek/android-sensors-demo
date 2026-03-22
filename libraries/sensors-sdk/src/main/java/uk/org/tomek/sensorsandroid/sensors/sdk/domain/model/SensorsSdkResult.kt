@@ -9,5 +9,8 @@ sealed interface SensorsSdkResult {
         val barometerData: BarometerData?,
         val activityData: ActivityData?,
     ) : SensorsSdkResult
-    data class Error(val message: String) : SensorsSdkResult
+    sealed class Error(open val message: String) : SensorsSdkResult {
+        data class GenericError(override val message: String) : Error(message)
+        data class PermissionError(val permissions: List<String>) : Error("Missing permissions: ${permissions.joinToString()}")
+    }
 }
